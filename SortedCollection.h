@@ -1,137 +1,97 @@
-#pragma once
-#include <iostream>
-#include <memory>
-#include <string>
-#include <stdexcept>
+#ifndef SORTEDCOLLECTION_H
+#define SORTEDCOLLECTION_H
+
 #include <vector>
+#include <algorithm>
+#include <stdexcept>
 
-using namespace std;
+template <typename T>
 
-template<typename Item>
-class Collection {
+class SortedCollection {
 
 public:
 
-  Collection();
-  Collection(int size);
-  Collection(Collection<Item>& a);
-  
-  virtual int size();
-  virtual Item get(int ndx) const;
-  virtual void add(Item e);
-  virtual void removeEnd();
-  
-  friend ostream& operator<<(ostream& out, const Collection& c){
+    SortedCollection() = default;
 
-    for (int i = 0; i < c.curSize; ++i) {
+    SortedCollection(size_t capacity) {
 
-      out << c.items[i] << " ";
+        this_collection.reserve(capacity);
+
+    }
+    SortedCollection (const SortedCollection& other) : this_collection(other.this_collection) {
 
     }
 
-    return out;
+    SortedCollection& operator+( const T& value ) {
 
-  }
+        this_collection.push_back(value);
 
-  Item& operator[](int index) {
-    return items.at(index);
-  }
-
-  const Item& operator[](int index) const {
-
-    return items.at(index);
-
-  }
-
-  void operator-(int index) {
-
-    if (index >= 0 && index < curSize) {
-
-      items.erase(items.begin() + index);
-
-      curSize--;
-
-    } else {
-
-      throw out_of_range("this is out of range");
+        std::sort(this_collection.begin(), 
+                    this_collection.end());
+        return *this;
 
     }
 
-  }
 
-protected:
-  int capacity;
-  int curSize;
-  static const int INITIAL_CAPACITY = 8;
+    SortedCollection& operator-( const T& value) {
 
-  void expand();
+        auto its = std::find( this_collection.begin(), 
+                            this_collection.end(), 
+                            value);
+
+        if (its != this_collection.end()) {
 
 
-  vector<Item> items;
+            this_collection.erase(its);
+
+
+        } else {
+
+            throw std::runtime_error("not found");
+        }
+
+        return *this;
+    }
+
+    SortedCollection& operator<<( const T& value ) {
+
+        this_collection.push_back(value);
+
+        std::sort(this_collection.begin(), 
+                 this_collection.end());
+
+        return *this;
+        
+    }
+
+
+    T operator[](size_t index) const 
+    {
+
+        if (index >= this_collection.size()) {
+
+            throw std::out_of_range("out of range");
+
+        }
+
+        return this_collection[ index ];
+
+    }
+
+
+    size_t size() 
+
+    const {
+
+        return this_collection.size();
+
+    }
+
+private:
+
+    std::vector<T> this_collection;
+
 
 };
 
-template<typename Item>
-Collection<Item>::Collection() : capacity(INITIAL_CAPACITY), curSize(0), items(vector<Item>(INITIAL_CAPACITY)) {
-
-}
-
-template<typename Item>
-Collection<Item>::Collection(int size) : capacity(size), curSize(0), items(vector<Item>(size)) {
-
-}
-
-template<typename Item>
-Collection<Item>::Collection(Collection<Item>& a) : capacity(a.capacity), curSize(a.curSize), items(a.items) {
-
-}
-
-template<typename Item>
-int Collection<Item>::size() {
-
-   return curSize;
-   
-}
-
-template<typename Item>
-Item Collection<Item>::get(int ndx) const {
-
-  if (ndx >= 0 && ndx < curSize) {
-
-    return items[ndx];
-
-  }
-
-  throw out_of_range("Index out of range");
-  
-}
-
-template<typename Item>
-
-void Collection<Item>::add(Item e) {
-
-    if (curSize == capacity) {
-
-      expand();
-
-    }
-
-    items[curSize++] = e;
-}
-
-template<typename Item>
-void Collection<Item>::removeEnd() {
-
-    if (curSize > 0) {
-        curSize--;
-    }
-
-}
-
-template<typename Item>
-void Collection<Item>::expand() {
-
-    capacity *= 2;
-    items.resize(capacity);
-
-}
+#endif
