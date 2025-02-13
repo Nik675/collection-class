@@ -1,97 +1,60 @@
 #ifndef SORTEDCOLLECTION_H
 #define SORTEDCOLLECTION_H
 
-#include <vector>
+#include "Collection.h"
 #include <algorithm>
-#include <stdexcept>
 
 template <typename T>
-
-class SortedCollection {
-
+class SortedCollection : public Collection<T> {
 public:
 
     SortedCollection() = default;
 
-    SortedCollection(size_t capacity) {
-
-        this_collection.reserve(capacity);
-
-    }
-    SortedCollection (const SortedCollection& other) : this_collection(other.this_collection) {
+    SortedCollection(size_t capacity) : Collection<T>(capacity) {
 
     }
 
-    SortedCollection& operator+( const T& value ) {
+    SortedCollection(const SortedCollection& other) : Collection<T>(other) {
 
-        this_collection.push_back(value);
+    }
 
-        std::sort(this_collection.begin(), 
-                    this_collection.end());
+    SortedCollection& operator+(const T& item) {
+
+        add( item );
+
         return *this;
 
     }
 
-
-    SortedCollection& operator-( const T& value) {
-
-        auto its = std::find( this_collection.begin(), 
-                            this_collection.end(), 
-                            value);
-
-        if (its != this_collection.end()) {
-
-
-            this_collection.erase(its);
-
-
-        } else {
-
-            throw std::runtime_error("not found");
-        }
-
-        return *this;
-    }
-
-    SortedCollection& operator<<( const T& value ) {
-
-        this_collection.push_back(value);
-
-        std::sort(this_collection.begin(), 
-                 this_collection.end());
-
-        return *this;
-        
-    }
-
-
-    T operator[](size_t index) const 
+    SortedCollection& operator<<( const T& item ) 
     {
+        add( item );
 
-        if (index >= this_collection.size()) {
+        return *this;
 
-            throw std::out_of_range("out of range");
+    }
 
+    void add(const T& item) {
+        auto its = std::lower_bound( this -> items.begin(), 
+                                     this -> items.end(), 
+                                    item) ;
+
+        this->items.insert(its, 
+                           item);
+    }
+
+    SortedCollection& operator-(const T& item) {
+
+
+        auto its = std::find(this -> items.begin(), 
+                            this  -> items.end(), 
+                            item);
+
+        if (its != this->items.end()) {
+            this->items.erase(its);
         }
-
-        return this_collection[ index ];
-
+        return *this;
     }
-
-
-    size_t size() 
-
-    const {
-
-        return this_collection.size();
-
-    }
-
-private:
-
-    std::vector<T> this_collection;
-
-
 };
 
 #endif
